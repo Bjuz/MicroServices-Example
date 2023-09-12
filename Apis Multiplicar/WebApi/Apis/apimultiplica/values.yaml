@@ -1,0 +1,7 @@
+serviceName: "apis-demo"
+server: "bjuztest.azurecr.io"
+repo: "apiappmultiplicar"
+containerPort: 4000
+replicas: 1
+namespace: "apiappmultiplicar"
+tag: "latest"

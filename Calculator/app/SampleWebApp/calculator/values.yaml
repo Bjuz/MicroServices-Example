@@ -1,0 +1,7 @@
+serviceName: "asp-demo "
+server: "bjuztest.azurecr.io"
+repo: "aspapp"
+containerPort: 80
+replicas: 1
+namespace: "aspapp"
+tag: "latest"

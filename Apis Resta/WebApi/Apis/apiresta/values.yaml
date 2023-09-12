@@ -1,0 +1,7 @@
+serviceName: "apis-demo"
+server: "bjuztest.azurecr.io"
+repo: "apiappresta"
+containerPort: 5000
+replicas: 1
+namespace: "apiappresta"
+tag: "latest"

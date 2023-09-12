@@ -1,0 +1,89 @@
+
+
+pool: Default
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+  imageRepository: 'aspapp'
+  containerRegistry: 'bjuztest.azurecr.io'
+  acrsecret: calculatorkey
+  replicaNo: 1
+  namespace: 'aspapp'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool: Default
+    steps:
+    - task: Docker@2
+      displayName: Build and push an image
+      inputs:
+        containerRegistry: 'Container Registry'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/app/Dockerfile'
+        tags: |
+          $(tag)
+        
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/kubernetes'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+
+
+- stage: Deploy
+  displayName: Deploy to Dev
+  dependsOn: Build
+  jobs:
+  - deployment: Deploy
+    displayName: Deploy to AKS
+    environment: 'Aks.$(namespace)'
+    pool: Default
+    strategy:
+      runOnce:
+        deploy:       
+          steps:
+            - task: DownloadPipelineArtifact@2
+              inputs:
+                buildType: 'current'
+                artifactName: 'manifests'
+                targetPath: '$(Pipeline.Workspace)/manifests'
+            - task: KubernetesManifest@0
+              inputs:
+                action: 'createSecret'
+                namespace: $(namespace)
+                secretType: 'dockerRegistry'
+                secretName: '$(acrsecret)'
+                dockerRegistryEndpoint: 'Container Registry'
+            - task: replacetokens@3
+              displayName: NumberOfReplicas
+              inputs:
+                rootDirectory: '$(Pipeline.Workspace)/manifests'
+                targetFiles: 'deployment.yml'
+                encoding: 'auto'
+                writeBOM: true
+                actionOnMissing: 'warn'
+                keepToken: false
+                actionOnNoFiles: 'continue'
+                enableTransforms: false
+                enableRecursion: false
+                useLegacyPattern: false
+                enableTelemetry: true
+            - task: KubernetesManifest@0
+              inputs:
+                action: 'deploy'
+                namespace: $(namespace)
+                manifests: |
+                  $(Pipeline.Workspace)/manifests/deployment.yml
+                  $(Pipeline.Workspace)/manifests/service.yml
+                imagePullSecrets: |
+                      $(acrsecret)
+                containers: |
+                      $(containerRegistry)/$(imageRepository):$(tag)

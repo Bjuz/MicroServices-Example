@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    var operations = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Add", Text = "Sumar" },
+        new SelectListItem { Value = "Subtract", Text = "Restar" },
+        new SelectListItem { Value = "Multiply", Text = "Multiplicar" }
+    };
+}
+
+@model CalculatorModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora</title>
+    <style>
+        .calculator {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 300px;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+
+
+            .calculator input[type="text"] {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .calculator input[type="submit"] {
+                width: 100%;
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 0;
+                border: none;
+                cursor: pointer;
+            }
+
+            .calculator .result {
+                font-weight: bold;
+                margin-top: 10px;
+            }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <form asp-action="Calculate">
+            <input type="number" asp-for="FirstNumber" placeholder="Primer número" />
+            <br />
+            <input type="number" asp-for="SecondNumber" placeholder="Segundo número" />
+            <br />
+            <label>Operación:</label>
+            <select asp-for="Operation" asp-items="operations">
+                <option value="">Selecciona una operación</option>
+            </select>
+            <br />
+            <input type="submit" value="Calcular" />
+        </form>
+        
+   
+        <div class="result">
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <p class="error-message">@Model.ErrorMessage</p>
+            }
+            Resultado: @Model.Result
+        </div>
+        <script>
+            console.log('@Model.Result');
+        </script>
+    </div>
+</body>
+</html>

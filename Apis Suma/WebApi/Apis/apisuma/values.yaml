@@ -1,0 +1,7 @@
+serviceName: "apis-demo"
+server: "bjuztest.azurecr.io"
+repo: "apisuma"
+containerPort: 3000
+replicas: 1
+namespace: "apisuma"
+tag: "latest"
